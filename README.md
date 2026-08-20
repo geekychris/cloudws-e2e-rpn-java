@@ -108,3 +108,23 @@ curl -X POST http://localhost:8080/calculate \
 # HTTP 400
 # {"error":"Stack underflow: operator '+' requires 2 operands but only 1 available"}
 ```
+
+## Development
+
+Common commands while working on this project:
+
+```bash
+# Run the full test suite (unit + MockMvc integration tests)
+mvn test
+
+# Compile and package into an executable jar, skipping tests
+mvn -DskipTests clean package
+
+# Run a single test class
+mvn test -Dtest=RpnCalculatorServiceTest
+```
+
+## License
+
+No license file is included; treat this repository as all-rights-reserved by
+default unless a `LICENSE` file is added.
