@@ -22,6 +22,14 @@ expressions like `(3 + 4) * 2` become `3 4 + 2 *`.
   - Malformed expressions (e.g. leftover operands)
 - Returns HTTP `400 Bad Request` with `{ "error": "<message>" }` on any parse
   or evaluation failure, and `200 OK` with `{ "result": <number> }` on success.
+- Symbolic math over the same RPN expression syntax, with variables (any
+  token starting with a letter, e.g. `x`, `y`) in addition to numbers:
+  - `POST /symbolic/simplify` algebraically simplifies an expression
+    (constant folding, identities like `x + 0 -> x`, combining like terms
+    like `x + x -> 2 * x`) and returns it as an infix string.
+  - `POST /symbolic/differentiate` computes the symbolic derivative of an
+    expression with respect to a named variable, using the sum, product,
+    quotient, power, and chain rules, then simplifies the result.
 
 ## Tech Stack
 
@@ -107,4 +115,42 @@ curl -X POST http://localhost:8080/calculate \
   -d '{"expression": "5 +"}'
 # HTTP 400
 # {"error":"Stack underflow: operator '+' requires 2 operands but only 1 available"}
+```
+
+### Symbolic Math
+
+Simplify an expression containing variables — `x + 0`:
+
+```bash
+curl -X POST http://localhost:8080/symbolic/simplify \
+  -H 'Content-Type: application/json' \
+  -d '{"expression": "x 0 +"}'
+# {"result":"x"}
+```
+
+Combine like terms — `x * x`:
+
+```bash
+curl -X POST http://localhost:8080/symbolic/simplify \
+  -H 'Content-Type: application/json' \
+  -d '{"expression": "x x *"}'
+# {"result":"x ^ 2"}
+```
+
+Differentiate `x^3` with respect to `x`:
+
+```bash
+curl -X POST http://localhost:8080/symbolic/differentiate \
+  -H 'Content-Type: application/json' \
+  -d '{"expression": "x 3 ^", "variable": "x"}'
+# {"result":"3 * x ^ 2"}
+```
+
+Differentiate `sin(x)` with respect to `x`:
+
+```bash
+curl -X POST http://localhost:8080/symbolic/differentiate \
+  -H 'Content-Type: application/json' \
+  -d '{"expression": "x sin", "variable": "x"}'
+# {"result":"cos(x)"}
 ```
